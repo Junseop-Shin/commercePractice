@@ -8,7 +8,9 @@ const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
+  const [products, setProducts] = useState<
+    { id: string; name: string; createAt: string }[]
+  >([]);
   // const [products, setProducts] = useState<
   //   { id: string; properties: { id: string }[] }[]
   // >([]);
@@ -54,13 +56,14 @@ export default function Home() {
           <br />
         </div>
         <div>
-          <p>Products</p>
-          <>
-            {products &&
-              products.map((item) => {
-                <div key={item.id}>{item.name}</div>;
-              })}
-          </>
+          <p>Product List</p>
+          {products &&
+            products.map((item) => (
+              <div key={item.id}>
+                {item.name}
+                <span>{item.createAt}</span>
+              </div>
+            ))}
           {/* {products &&
             products.map((item) => (
               <div key={item.id}>
