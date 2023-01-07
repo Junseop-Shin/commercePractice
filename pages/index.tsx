@@ -3,6 +3,8 @@ import Image from 'next/image';
 import { Inter } from '@next/font/google';
 import styles from '../styles/Home.module.css';
 import { useEffect, useRef, useState } from 'react';
+import { css } from '@emotion/react';
+import Button from '@components/Button';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -50,12 +52,27 @@ export default function Home() {
             Get started by editing&nbsp;
             <code className={styles.code}>pages/index.tsx</code>
           </p>
-          <input ref={inputRef} type="text" placeholder="na me" />
-          <button onClick={handleClick}>Add jacket</button>
+          <input
+            className="placeholder:italic placeholder:text-slate-400 block bg-white w-96 border border-slate-300 rounded-md py-2 pl-3 pr-3 shadow-sm focus:outline-none focus:border-sky-500 focus:ring-sky-500 focus:ring-1 sm:text-sm"
+            ref={inputRef}
+            type="text"
+            placeholder="name"
+          />
+          <button
+            css={css`
+              background-color: hotpink;
+              padding: 16px;
+              border-radius: 8px;
+            `}
+            onClick={handleClick}
+          >
+            Add jacket
+          </button>
           <br />
           <br />
         </div>
         <div>
+          <Button onClick={handleClick}>Add Jacket 2</Button>
           <p>Product List</p>
           {products &&
             products.map((item) => (
