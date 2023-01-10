@@ -5,38 +5,85 @@ import { Input, Pagination, SegmentedControl, Select } from '@mantine/core';
 import { CATEGORY_MAP, FILTERS, TAKE } from 'constants/products';
 import { IconSearch } from '@tabler/icons';
 import useDebounce from 'useDebounce';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Products() {
   const [activePage, setPage] = useState(1);
-  const [categories, setCategories] = useState<categories[]>([]);
+  // const [categories, setCategories] = useState<categories[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('-1');
-  const [total, setTotal] = useState(0);
-  const [products, setProducts] = useState<products[]>([]);
+  // const [total, setTotal] = useState(0);
+  // const [products, setProducts] = useState<products[]>([]);
   const [selectedFilter, setFilter] = useState<string | null>(FILTERS[0].value);
   const [keyword, setKeyword] = useState<string>('');
 
-  useEffect(() => {
-    fetch('/api/get-categories').then((res) =>
-      res.json().then((data) => setCategories(data.items))
-    );
-  }, []);
+  // useEffect(() => {
+  //   fetch('/api/get-categories').then((res) =>
+  //     res.json().then((data) => setCategories(data.items))
+  //   );
+  // }, []);
+
+  const { data: categories } = useQuery<
+    { items: categories[] },
+    unknown,
+    categories[]
+  >(
+    ['/api/get-categories'],
+    () => fetch('/api/get-categories').then((res) => res.json()),
+    {
+      select: (data) => data.items,
+    }
+  );
 
   const debouncedValue = useDebounce(keyword);
 
-  useEffect(() => {
-    fetch(
-      `/api/get-products-count?category=${selectedCategory}&contains=${debouncedValue}`
-    ).then((res) =>
-      res.json().then((data) => setTotal(Math.ceil(data.items / TAKE)))
-    );
-  }, [selectedCategory, debouncedValue]);
+  // useEffect(() => {
+  //   fetch(
+  //     `/api/get-products-count?category=${selectedCategory}&contains=${debouncedValue}`
+  //   ).then((res) =>
+  //     res.json().then((data) => setTotal(Math.ceil(data.items / TAKE)))
+  //   );
+  // }, [selectedCategory, debouncedValue]);
 
-  useEffect(() => {
-    const skip = TAKE * (activePage - 1);
-    fetch(
-      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedValue}`
-    ).then((res) => res.json().then((data) => setProducts(data.items)));
-  }, [activePage, selectedCategory, selectedFilter, debouncedValue]);
+  const { data: total } = useQuery<{ items: number }, unknown, number>(
+    [
+      `/api/get-products-count?category=${selectedCategory}&contains=${debouncedValue}`,
+    ],
+    () =>
+      fetch(
+        `/api/get-products-count?category=${selectedCategory}&contains=${debouncedValue}`
+      ).then((res) => res.json()),
+    {
+      select: (data) => Math.ceil(data.items / TAKE),
+    }
+  );
+
+  // useEffect(() => {
+  //   const skip = TAKE * (activePage - 1);
+  //   fetch(
+  //     `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedValue}`
+  //   ).then((res) => res.json().then((data) => setProducts(data.items)));
+  // }, [activePage, selectedCategory, selectedFilter, debouncedValue]);
+
+  const { data: products } = useQuery<
+    { items: products[] },
+    unknown,
+    products[]
+  >(
+    [
+      `/api/get-products?skip=${
+        TAKE * (activePage - 1)
+      }&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedValue}`,
+    ],
+    () =>
+      fetch(
+        `/api/get-products?skip=${
+          TAKE * (activePage - 1)
+        }&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedValue}`
+      ).then((res) => res.json()),
+    {
+      select: (data) => data.items,
+    }
+  );
 
   const changeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value);
@@ -102,12 +149,14 @@ export default function Products() {
         </div>
       )}
       <div className="w-full flex mt-5">
-        <Pagination
-          className="m-auto"
-          page={activePage}
-          onChange={setPage}
-          total={total}
-        />
+        {total && (
+          <Pagination
+            className="m-auto"
+            page={activePage}
+            onChange={setPage}
+            total={total}
+          />
+        )}
         ;
       </div>
     </div>
