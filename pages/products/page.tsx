@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { products, categories } from '@prisma/client';
 import Image from 'next/image';
-import { Pagination } from '@mantine/core';
-import { CATEGORY_MAP, TAKE } from 'constants/products';
-import { SegmentedControl } from '@mantine/core';
+import { Input, Pagination, SegmentedControl, Select } from '@mantine/core';
+import { CATEGORY_MAP, FILTERS, TAKE } from 'constants/products';
+import { IconSearch } from '@tabler/icons';
+import useDebounce from 'useDebounce';
 
 export default function Products() {
   const [activePage, setPage] = useState(1);
@@ -11,33 +12,40 @@ export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState('-1');
   const [total, setTotal] = useState(0);
   const [products, setProducts] = useState<products[]>([]);
+  const [selectedFilter, setFilter] = useState<string | null>(FILTERS[0].value);
+  const [keyword, setKeyword] = useState<string>('');
 
   useEffect(() => {
     fetch('/api/get-categories').then((res) =>
       res.json().then((data) => setCategories(data.items))
     );
-    fetch(`/api/get-products-count?category=${selectedCategory}`).then((res) =>
-      res.json().then((data) => setTotal(Math.ceil(data.items / TAKE)))
-    );
   }, []);
 
+  const debouncedValue = useDebounce(keyword);
+
   useEffect(() => {
-    fetch(`/api/get-products-count?category=${selectedCategory}`).then((res) =>
+    fetch(
+      `/api/get-products-count?category=${selectedCategory}&contains=${debouncedValue}`
+    ).then((res) =>
       res.json().then((data) => setTotal(Math.ceil(data.items / TAKE)))
     );
-  }, [selectedCategory]);
+  }, [selectedCategory, debouncedValue]);
 
   useEffect(() => {
     const skip = TAKE * (activePage - 1);
     fetch(
-      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}`
+      `/api/get-products?skip=${skip}&take=${TAKE}&category=${selectedCategory}&orderBy=${selectedFilter}&contains=${debouncedValue}`
     ).then((res) => res.json().then((data) => setProducts(data.items)));
-  }, [activePage, selectedCategory]);
+  }, [activePage, selectedCategory, selectedFilter, debouncedValue]);
+
+  const changeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setKeyword(e.target.value);
+  };
 
   return (
     <div className="px-36 mt-36 mb-36">
       {categories && (
-        <div className="mb-4">
+        <div className="mb-4 flex">
           <SegmentedControl
             value={selectedCategory}
             onChange={setSelectedCategory}
@@ -50,6 +58,21 @@ export default function Products() {
             ]}
             color="dark"
           />
+          <div className="m-auto w-36">
+            <Input
+              icon={<IconSearch />}
+              placeholder="Search"
+              value={keyword}
+              onChange={changeKeyword}
+            />
+          </div>
+          <div className="ml-auto w-28">
+            <Select
+              value={selectedFilter}
+              onChange={setFilter}
+              data={FILTERS}
+            ></Select>
+          </div>
         </div>
       )}
       {products && (
