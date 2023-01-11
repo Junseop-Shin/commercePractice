@@ -77,6 +77,22 @@ const hoodieData: Prisma.productsCreateInput[] = Array.apply(
 }));
 
 async function main() {
+  const CATEGORIES = ['SNEAKERS', 'T-SHIRTS', 'PANTS', 'CAP', 'HOODIE'];
+  CATEGORIES.forEach(async (c, i) => {
+    const product = await prisma.categories.upsert({
+      where: {
+        id: i + 1,
+      },
+      update: {
+        name: c,
+      },
+      create: {
+        name: c,
+      },
+    });
+    console.log(`Upserted Category id: ${product.id}`);
+  });
+
   await prisma.products.deleteMany();
 
   const productData = [

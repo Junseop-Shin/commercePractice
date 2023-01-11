@@ -6,6 +6,7 @@ import { CATEGORY_MAP, FILTERS, TAKE } from 'constants/products';
 import { IconSearch } from '@tabler/icons';
 import useDebounce from 'useDebounce';
 import { useQuery } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
 
 export default function Products() {
   const [activePage, setPage] = useState(1);
@@ -15,7 +16,7 @@ export default function Products() {
   // const [products, setProducts] = useState<products[]>([]);
   const [selectedFilter, setFilter] = useState<string | null>(FILTERS[0].value);
   const [keyword, setKeyword] = useState<string>('');
-
+  const { data: session } = useSession();
   // useEffect(() => {
   //   fetch('/api/get-categories').then((res) =>
   //     res.json().then((data) => setCategories(data.items))
@@ -91,6 +92,7 @@ export default function Products() {
 
   return (
     <div className="px-36 mt-36 mb-36">
+      {session?.user && <p>안녕하세요. {session.user.name}님 환영합니다.</p>}
       {categories && (
         <div className="mb-4 flex">
           <SegmentedControl

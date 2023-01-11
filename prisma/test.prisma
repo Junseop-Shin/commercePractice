@@ -1,3 +1,5 @@
+//yarn prisma db pull --schema=./prisma/test.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
