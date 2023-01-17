@@ -7,8 +7,10 @@ import { IconSearch } from '@tabler/icons';
 import useDebounce from 'useDebounce';
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 export default function Products() {
+  const router = useRouter();
   const [activePage, setPage] = useState(1);
   // const [categories, setCategories] = useState<categories[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('-1');
@@ -107,7 +109,7 @@ export default function Products() {
             ]}
             color="dark"
           />
-          <div className="m-auto w-36">
+          <div className="m-auto w-28">
             <Input
               icon={<IconSearch />}
               placeholder="Search"
@@ -115,7 +117,7 @@ export default function Products() {
               onChange={changeKeyword}
             />
           </div>
-          <div className="ml-auto w-28">
+          <div className="ml-auto mh-auto w-28">
             <Select
               value={selectedFilter}
               onChange={setFilter}
@@ -127,7 +129,11 @@ export default function Products() {
       {products && (
         <div className="grid grid-cols-3 gap-5">
           {products.map((item) => (
-            <div key={item.id} style={{ maxWidth: 310 }}>
+            <div
+              key={item.id}
+              style={{ maxWidth: 310 }}
+              onClick={() => router.push(`/products/${item.id}`)}
+            >
               <Image
                 className="rounded"
                 alt={item.name}
@@ -159,7 +165,6 @@ export default function Products() {
             total={total}
           />
         )}
-        ;
       </div>
     </div>
   );

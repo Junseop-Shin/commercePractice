@@ -7,9 +7,7 @@ const sneakersData: Prisma.productsCreateInput[] = Array.apply(
   Array(10)
 ).map((_, index) => ({
   name: `Sneakers ${index + 1}`,
-  contents: `{"blocks":[{"key":"3mt2m","text":"This is a Dark Jeans ${
-    index + 1
-  }","type":"unstyled","depth":0,"inlineStyleRanges":[{"offset":9,"length":10,"style":"BOLD"}],"entityRanges":[],"data":{}}],"entityMap":{}}`,
+  contents: `"This is a White Sneakers ${index + 1}"`,
   category_id: 1,
   image_url: `https://picsum.photos/id/${
     (index + 1) % 10 === 0 ? 10 : (index + 1) % 10
@@ -22,9 +20,7 @@ const tShirtData: Prisma.productsCreateInput[] = Array.apply(
   Array(10)
 ).map((_, index) => ({
   name: `T-Shirts ${index + 1}`,
-  contents: `{"blocks":[{"key":"3mt2m","text":"This is a Dark Jeans ${
-    index + 1
-  }","type":"unstyled","depth":0,"inlineStyleRanges":[{"offset":9,"length":10,"style":"BOLD"}],"entityRanges":[],"data":{}}],"entityMap":{}}`,
+  contents: `"This is a Navy T-Shirt ${index + 1}"`,
   category_id: 2,
   image_url: `https://picsum.photos/id/${
     (index + 1) % 10 === 0 ? 10 : ((index + 1) % 10) + 10
@@ -37,9 +33,7 @@ const pantsData: Prisma.productsCreateInput[] = Array.apply(
   Array(10)
 ).map((_, index) => ({
   name: `Pants ${index + 1}`,
-  contents: `{"blocks":[{"key":"3mt2m","text":"This is a Dark Jeans ${
-    index + 1
-  }","type":"unstyled","depth":0,"inlineStyleRanges":[{"offset":9,"length":10,"style":"BOLD"}],"entityRanges":[],"data":{}}],"entityMap":{}}`,
+  contents: `"This is a Dark Jeans ${index + 1}"`,
   category_id: 3,
   image_url: `https://picsum.photos/id/${
     (index + 1) % 10 === 0 ? 10 : ((index + 1) % 10) + 20
@@ -50,9 +44,7 @@ const pantsData: Prisma.productsCreateInput[] = Array.apply(
 const capData: Prisma.productsCreateInput[] = Array.apply(null, Array(10)).map(
   (_, index) => ({
     name: `Cap ${index + 1}`,
-    contents: `{"blocks":[{"key":"3mt2m","text":"This is a Dark Jeans ${
-      index + 1
-    }","type":"unstyled","depth":0,"inlineStyleRanges":[{"offset":9,"length":10,"style":"BOLD"}],"entityRanges":[],"data":{}}],"entityMap":{}}`,
+    contents: `"This is a MLB cap ${index + 1}"`,
     category_id: 4,
     image_url: `https://picsum.photos/id/${
       (index + 1) % 10 === 0 ? 10 : ((index + 1) % 10) + 30
@@ -66,9 +58,7 @@ const hoodieData: Prisma.productsCreateInput[] = Array.apply(
   Array(10)
 ).map((_, index) => ({
   name: `Hoodie ${index + 1}`,
-  contents: `{"blocks":[{"key":"3mt2m","text":"This is a Dark Jeans ${
-    index + 1
-  }","type":"unstyled","depth":0,"inlineStyleRanges":[{"offset":9,"length":10,"style":"BOLD"}],"entityRanges":[],"data":{}}],"entityMap":{}}`,
+  contents: `"This is a Nike hoodie ${index + 1}"`,
   category_id: 5,
   image_url: `https://picsum.photos/id/${
     (index + 1) % 10 === 0 ? 10 : ((index + 1) % 10) + 40
@@ -79,7 +69,7 @@ const hoodieData: Prisma.productsCreateInput[] = Array.apply(
 async function main() {
   const CATEGORIES = ['SNEAKERS', 'T-SHIRTS', 'PANTS', 'CAP', 'HOODIE'];
   CATEGORIES.forEach(async (c, i) => {
-    const product = await prisma.categories.upsert({
+    const categories = await prisma.categories.upsert({
       where: {
         id: i + 1,
       },
@@ -90,7 +80,7 @@ async function main() {
         name: c,
       },
     });
-    console.log(`Upserted Category id: ${product.id}`);
+    console.log(`Upserted Category id: ${categories.id}`);
   });
 
   await prisma.products.deleteMany();
