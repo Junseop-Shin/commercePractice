@@ -5,7 +5,7 @@ import CustomEditor from '@components/Editor';
 import { useRouter } from 'next/router';
 import { EditorState, convertFromRaw } from 'draft-js';
 import { GetServerSidePropsContext } from 'next';
-import { products, Cart } from '@prisma/client';
+import { products, Cart, OrderItem } from '@prisma/client';
 import { format } from 'date-fns';
 import { CATEGORY_MAP } from 'constants/products';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -14,6 +14,7 @@ import { IconHeart, IconHeartbeat, IconShoppingCart } from '@tabler/icons';
 import { useSession } from 'next-auth/react';
 import { CountControl } from '@components/CountControl';
 import { CART_QUERY_KEY } from 'pages/cart';
+import { ORDER_QUERY_KEY } from 'pages/my';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const product = await fetch(
@@ -113,6 +114,29 @@ export default function Products(props: {
     }
   );
 
+  const { mutate: addOrder } = useMutation<
+    unknown,
+    unknown,
+    Omit<OrderItem, 'id'>[],
+    any
+  >(
+    (items) =>
+      fetch('api/add-order', {
+        method: 'POST',
+        body: JSON.stringify({ items }),
+      })
+        .then((res) => res.json())
+        .then((data) => data.items),
+    {
+      onMutate: () => {
+        queryClient.invalidateQueries([ORDER_QUERY_KEY]);
+      },
+      onSuccess: () => {
+        router.push('/my');
+      },
+    }
+  );
+
   const product = props.product;
 
   const validate = async (type: 'cart' | 'order') => {
@@ -126,6 +150,16 @@ export default function Products(props: {
         quantity: quantity,
         amount: product.price * quantity,
       });
+    }
+    if (type === 'order') {
+      addOrder([
+        {
+          productId: product.id,
+          quantity: quantity,
+          price: product.price,
+          amount: product.price * quantity,
+        },
+      ]);
     }
   };
 
@@ -225,6 +259,25 @@ export default function Products(props: {
                 찜하기
               </Button>
             </div>
+            <Button
+              leftIcon={<IconShoppingCart size={20} stroke={1.5} />}
+              style={{ backgroundColor: 'black' }}
+              radius="xl"
+              size="md"
+              styles={{
+                root: { paddingRight: 14, height: 48 },
+              }}
+              onClick={() => {
+                if (session == null) {
+                  alert('로그인이 필요해요');
+                  router.push('/auth/login');
+                  return;
+                }
+                validate('order');
+              }}
+            >
+              구매하기
+            </Button>
             <div className="text-sm text-zinc-300">
               등록 일: {format(new Date(product.createdAt), 'yyyy년 M월 d일')}
             </div>

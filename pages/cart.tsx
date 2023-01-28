@@ -5,9 +5,10 @@ import { IconRefresh, IconX } from '@tabler/icons';
 import styled from '@emotion/styled';
 import { Button } from '@mantine/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { products, Cart } from '@prisma/client';
+import { products, Cart, OrderItem } from '@prisma/client';
 import { useRouter } from 'next/router';
 import { CATEGORY_MAP } from 'constants/products';
+import { ORDER_QUERY_KEY } from './my';
 
 interface CartItemProps extends Cart {
   name: string;
@@ -19,6 +20,7 @@ export const CART_QUERY_KEY = '/api/get-cart';
 
 export default function CartPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { data } = useQuery<
     { items: CartItemProps[] },
@@ -42,8 +44,42 @@ export default function CartPage() {
       .reduce((prev, curr) => prev + curr, 0);
   }, [data]);
 
+  const { mutate: addOrder } = useMutation<
+    unknown,
+    unknown,
+    Omit<OrderItem, 'id'>[],
+    any
+  >(
+    (items) =>
+      fetch('api/add-order', {
+        method: 'POST',
+        body: JSON.stringify({ items }),
+      })
+        .then((res) => res.json())
+        .then((data) => data.items),
+    {
+      onMutate: () => {
+        queryClient.invalidateQueries([ORDER_QUERY_KEY]);
+      },
+      onSuccess: () => {
+        router.push('/my');
+      },
+    }
+  );
+
   const handleOrder = () => {
-    alert('장바구니 주문하기');
+    if (data == null) {
+      return;
+    }
+    addOrder(
+      data.map((cart) => ({
+        productId: cart.productId,
+        quantity: cart.quantity,
+        price: cart.price,
+        amount: cart.amount,
+      }))
+    );
+    alert('장바구니 주문');
   };
 
   const { data: products } = useQuery<
@@ -154,6 +190,12 @@ const CartItem = (props: CartItemProps) => {
   const [amount, setAmount] = useState<number>(props.amount);
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (quantity != null) {
+      setAmount(quantity * props.price);
+    }
+  }, [quantity, props.price]);
 
   const { mutate: updateCart } = useMutation<unknown, unknown, Cart, any>(
     (item) =>
