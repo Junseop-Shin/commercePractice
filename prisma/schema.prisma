@@ -45,7 +45,7 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
 
   @@unique([provider, providerAccountId])
 }
@@ -55,7 +55,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id])
 }
 
 model User {
@@ -80,4 +80,12 @@ model Wishlist {
   id         Int    @id @default(autoincrement())
   userId     String @unique
   productIds String
+}
+
+model Cart {
+  id        Int    @id @default(autoincrement())
+  userId    String
+  productId Int
+  quantity  Int
+  amount    Int
 }
