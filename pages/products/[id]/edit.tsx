@@ -41,7 +41,7 @@ export default function Products() {
     undefined
   );
   const handleSave = () => {
-    if (editorState) {
+    if (editorState && productId != null) {
       fetch('/api/update-product', {
         method: 'POST',
         body: JSON.stringify({

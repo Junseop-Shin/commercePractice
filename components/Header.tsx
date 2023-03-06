@@ -18,7 +18,7 @@ export default function Header() {
         />
         {session ? (
           <Image
-            onClick={() => router.push('/auth/login')}
+            onClick={() => router.push('/my')}
             src={session.user?.image!}
             width={30}
             height={30}

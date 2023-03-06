@@ -5,7 +5,7 @@ import CustomEditor from '@components/Editor';
 import { useRouter } from 'next/router';
 import { EditorState, convertFromRaw } from 'draft-js';
 import { GetServerSidePropsContext } from 'next';
-import { products, Cart, OrderItem } from '@prisma/client';
+import { products, Cart, OrderItem, Comment } from '@prisma/client';
 import { format } from 'date-fns';
 import { CATEGORY_MAP } from 'constants/products';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -15,6 +15,7 @@ import { useSession } from 'next-auth/react';
 import { CountControl } from '@components/CountControl';
 import { CART_QUERY_KEY } from 'pages/cart';
 import { ORDER_QUERY_KEY } from 'pages/my';
+import CommentItem from 'components/CommentItem';
 
 export async function getServerSideProps(context: GetServerSidePropsContext) {
   const product = await fetch(
@@ -22,17 +23,27 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   )
     .then((res) => res.json())
     .then((data) => data.items);
+
+  const comments = await fetch(
+    `http://localhost:3000/api/get-comments?productId=${context.params?.id}`
+  )
+    .then((res) => res.json())
+    .then((data) => data.items);
   return {
     props: {
       product: { ...product, images: [product.image_url, product.image_url] },
+      comments: comments,
     },
   };
 }
+
+export interface CommentItemType extends Comment, OrderItem {}
 
 const WISHLIST_QUERY_KEY = '/api/get-wishlist';
 
 export default function Products(props: {
   product: products & { images: string[] };
+  comments: CommentItemType[];
 }) {
   const [index, setIndex] = useState(0);
   const { data: session } = useSession();
@@ -198,6 +209,13 @@ export default function Products(props: {
             {editorState != null && (
               <CustomEditor editorState={editorState} readOnly />
             )}
+            <div>
+              <p className="text-2xl text-semibold">후기</p>
+              {props.comments &&
+                props.comments.map((comment, idx) => (
+                  <CommentItem key={idx} item={comment} />
+                ))}
+            </div>
           </div>
           <div style={{ maxWidth: 600 }} className="flex flex-col space-y-6">
             <div className="text-lg text-zinc-400">
