@@ -29,6 +29,7 @@ yarn-error.log*
 .env*.local
 .env
 constants/googleLogin.ts
+pages/api/.env
 
 # vercel
 .vercel
