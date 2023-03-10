@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
-import { unstable_getServerSession } from 'next-auth';
+import { getServerSession } from 'next-auth';
 import { authOption } from './auth/[...nextauth]';
 
 const prisma = new PrismaClient();
@@ -33,8 +33,8 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   const { orderItemId } = req.query;
-  const session = await unstable_getServerSession(req, res, authOption);
-  if (session == null) {
+  const session = await getServerSession(req, res, authOption);
+  if (session == null || !session.user?.name) {
     res.status(200).json({ items: [], message: `No Session` });
     return;
   }
@@ -43,7 +43,10 @@ export default async function handler(
     return;
   }
   try {
-    const wishlist = await getComment(String(session.id), Number(orderItemId));
+    const wishlist = await getComment(
+      String(session.user?.name),
+      Number(orderItemId)
+    );
     res.status(200).json({ items: wishlist, message: `Success` });
   } catch (error) {
     res.status(400).json({ message: `Failed` });

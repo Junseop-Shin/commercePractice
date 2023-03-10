@@ -32,7 +32,7 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
   return {
     props: {
       product: { ...product, images: [product.image_url, product.image_url] },
-      comments: comments,
+      comments: comments ? comments : null,
     },
   };
 }
@@ -192,7 +192,7 @@ export default function Products(props: {
                 />
               ))}
             </Carousel>
-            <div className="flex, space-x-4 mt-2">
+            <div className="flex space-x-4 mt-2">
               {product.images.map((url, idx) => (
                 <Image
                   onClick={() => {
